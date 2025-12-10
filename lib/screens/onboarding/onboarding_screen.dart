@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/database_service.dart';
 import '../../services/gamification_service.dart';
 import '../../services/paper_trading_service.dart';
@@ -10,7 +11,6 @@ import '../learning/duolingo_home_screen.dart';
 import '../professional_stocks_screen.dart';
 import '../main_screen.dart';
 import 'notification_permission_screen.dart';
-import 'personalized_onboarding_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -85,6 +85,30 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Future<void> _completeOnboarding() async {
     try {
+      // Get user name from Google account (if signed in with Google)
+      try {
+        final supabase = Supabase.instance.client;
+        final user = supabase.auth.currentUser;
+        if (user != null) {
+          // Get name from Google account metadata
+          final displayName = user.userMetadata?['full_name'] ?? 
+                            user.userMetadata?['name'] ?? 
+                            user.userMetadata?['display_name'] ??
+                            user.email?.split('@')[0] ?? 
+                            'User';
+          
+          // Save user profile with name from Google
+          await DatabaseService.saveUserProfileData({
+            'displayName': displayName,
+            'name': displayName,
+            'email': user.email ?? '',
+            'photoURL': user.userMetadata?['avatar_url'],
+          });
+        }
+      } catch (e) {
+        print('⚠️ Could not get user name from Google: $e');
+      }
+      
       // Mark onboarding as completed
       await DatabaseService.saveUserProgress({
         'onboarding_completed': true,

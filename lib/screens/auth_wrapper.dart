@@ -394,9 +394,9 @@ class _AuthenticatedAppState extends State<_AuthenticatedApp> with WidgetsBindin
       );
     }
 
-    // Show personalized onboarding if needed
+    // Show simple onboarding if needed (just introduces the app, no personalization)
     if (_needsOnboarding) {
-      return const PersonalizedOnboardingScreen();
+      return const OnboardingScreen();
     }
 
     // Show main app
