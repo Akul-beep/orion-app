@@ -1,8 +1,27 @@
 import 'package:flutter/material.dart';
 import '../widgets/tradingview_embedded_chart.dart';
+import '../services/user_progress_service.dart';
 
-class TradingViewDemoScreen extends StatelessWidget {
+class TradingViewDemoScreen extends StatefulWidget {
   const TradingViewDemoScreen({super.key});
+
+  @override
+  State<TradingViewDemoScreen> createState() => _TradingViewDemoScreenState();
+}
+
+class _TradingViewDemoScreenState extends State<TradingViewDemoScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Track screen visit
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      UserProgressService().trackScreenVisit(
+        screenName: 'TradingViewDemoScreen',
+        screenType: 'main',
+        metadata: {'section': 'chart_demo'},
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

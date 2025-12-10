@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../models/company_profile.dart';
+import '../utils/stock_utils.dart';
 import 'tradingview_mobile_chart.dart';
 
 class TradingViewActualWidget extends StatefulWidget {
@@ -10,6 +13,7 @@ class TradingViewActualWidget extends StatefulWidget {
   final bool showVolume;
   final bool showLegend;
   final String interval; // '1', '5', '15', '30', '60', 'D', 'W', 'M'
+  final CompanyProfile? profile; // Optional profile for ETF detection
 
   const TradingViewActualWidget({
     super.key,
@@ -20,6 +24,7 @@ class TradingViewActualWidget extends StatefulWidget {
     this.showVolume = true,
     this.showLegend = true,
     this.interval = 'D',
+    this.profile,
   });
 
   @override
@@ -34,7 +39,7 @@ class _TradingViewActualWidgetState extends State<TradingViewActualWidget> {
   void initState() {
     super.initState();
     // Simulate loading time for the embedded chart
-    Future.delayed(const Duration(seconds: 1), () {
+    Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -46,14 +51,19 @@ class _TradingViewActualWidgetState extends State<TradingViewActualWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity, // Explicit full width
       height: widget.height,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFE5E7EB),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
@@ -92,16 +102,16 @@ class _TradingViewActualWidgetState extends State<TradingViewActualWidget> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2C2C54)),
+            const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0052FF)),
             ),
             SizedBox(height: 16),
             Text(
               'Loading ${widget.symbol} Chart...',
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF2C2C54),
+                color: const Color(0xFF111827),
               ),
             ),
             SizedBox(height: 8),
@@ -184,13 +194,13 @@ class _TradingViewActualWidgetState extends State<TradingViewActualWidget> {
   Widget _buildRealTradingViewChart() {
     return TradingViewMobileChart(
       symbol: widget.symbol,
+      profile: widget.profile,
       height: widget.height,
       theme: widget.theme,
       showToolbar: widget.showToolbar,
       showVolume: widget.showVolume,
       showLegend: widget.showLegend,
       interval: widget.interval,
-      onTap: () => _showFullscreenChart(),
     );
   }
 
@@ -424,8 +434,19 @@ class _TradingViewActualWidgetState extends State<TradingViewActualWidget> {
   String _getTradingViewIframeUrl() {
     // Build TradingView iframe URL
     final baseUrl = 'https://www.tradingview.com/widget/advanced-chart/';
+    
+    // Get properly formatted symbol with exchange prefix (dynamically detected)
+    String tradingViewSymbol = StockUtils.getTradingViewSymbol(widget.symbol, widget.profile);
+    
+    // Special handling for SPY - ensure it uses ARCA prefix
+    if (widget.symbol.toUpperCase() == 'SPY') {
+      if (!tradingViewSymbol.startsWith('ARCA:') && !tradingViewSymbol.startsWith('AMEX:')) {
+        tradingViewSymbol = 'ARCA:${widget.symbol}';
+      }
+    }
+    
     final params = {
-      'symbol': 'NASDAQ:${widget.symbol}',
+      'symbol': tradingViewSymbol,
       'theme': widget.theme,
       'style': '1',
       'interval': widget.interval,
@@ -452,159 +473,8 @@ class _TradingViewActualWidgetState extends State<TradingViewActualWidget> {
   }
 
   Widget _buildChartControls() {
-    return Positioned(
-      top: 12,
-      right: 12,
-      child: Row(
-        children: [
-          // Fullscreen Button
-          GestureDetector(
-            onTap: () => _showFullscreenChart(),
-            child: Container(
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 8,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Icon(
-                Icons.fullscreen,
-                size: 16,
-                color: Color(0xFF2C2C54),
-              ),
-            ),
-          ),
-          SizedBox(width: 8),
-          // Refresh Button
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                _isLoading = true;
-              });
-              Future.delayed(const Duration(seconds: 1), () {
-                if (mounted) {
-                  setState(() {
-                    _isLoading = false;
-                  });
-                }
-              });
-            },
-            child: Container(
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 8,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Icon(
-                Icons.refresh,
-                size: 16,
-                color: Color(0xFF2C2C54),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    // Chart controls removed - refresh button moved to chart header
+    return const SizedBox.shrink();
   }
 
-  void _showFullscreenChart() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Container(
-            width: double.infinity,
-            height: MediaQuery.of(context).size.height * 0.9,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: [
-                // Header
-                Container(
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Color(0xFF2C2C54),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      topRight: Radius.circular(16),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.show_chart,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${widget.symbol} Chart',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'TradingView • Real-time Data',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        icon: Icon(
-                          Icons.close,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Chart Content
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    child: TradingViewMobileChart(
-                      symbol: widget.symbol,
-                      height: MediaQuery.of(context).size.height * 0.9 - 100,
-                      theme: widget.theme,
-                      showToolbar: true, // Show full toolbar in maximized view
-                      showVolume: widget.showVolume,
-                      showLegend: widget.showLegend,
-                      interval: widget.interval,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
 }

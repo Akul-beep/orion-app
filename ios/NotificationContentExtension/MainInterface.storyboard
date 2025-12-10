@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="M4Y-Yb-fvc">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Notification View Controller-->
+        <scene sceneID="EhY-Ig-aBV">
+            <objects>
+                <viewController id="M4Y-Yb-fvc" customClass="NotificationViewController" customModule="NotificationContentExtension" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="W5h-8b-4re">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="100"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GJd-Yh-RWb">
+                                <rect key="frame" x="20" y="8" width="280" height="20.5"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
+                                <color key="textColor" systemColor="labelColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Body" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="M2f-Jp-7vR">
+                                <rect key="frame" x="20" y="32.5" width="280" height="36"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="AppIcon" translatesAutoresizingMaskIntoConstraints="NO" id="bKe-3c-9sM">
+                                <rect key="frame" x="320" y="8" width="74" height="84"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="74" id="6tK-2h-M1f"/>
+                                    <constraint firstAttribute="height" constant="84" id="H5f-dN-4kK"/>
+                                </constraints>
+                            </imageView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="4qk-I5-YsI"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="GJd-Yh-RWb" firstAttribute="leading" secondItem="4qk-I5-YsI" secondAttribute="leading" constant="20" id="0sK-5M-5eE"/>
+                            <constraint firstItem="bKe-3c-9sM" firstAttribute="trailing" secondItem="4qk-I5-YsI" secondAttribute="trailing" constant="20" id="2bK-8h-3fG"/>
+                            <constraint firstItem="M2f-Jp-7vR" firstAttribute="top" secondItem="GJd-Yh-RWb" secondAttribute="bottom" constant="4" id="3cK-9i-4hH"/>
+                            <constraint firstItem="bKe-3c-9sM" firstAttribute="top" secondItem="4qk-I5-YsI" secondAttribute="top" constant="8" id="4dL-0j-5iI"/>
+                            <constraint firstItem="GJd-Yh-RWb" firstAttribute="top" secondItem="4qk-I5-YsI" secondAttribute="top" constant="8" id="5eM-1k-6jJ"/>
+                            <constraint firstItem="M2f-Jp-7vR" firstAttribute="leading" secondItem="4qk-I5-YsI" secondAttribute="leading" constant="20" id="6fN-2l-7kK"/>
+                            <constraint firstItem="bKe-3c-9sM" firstAttribute="leading" secondItem="GJd-Yh-RWb" secondAttribute="trailing" constant="20" id="7gO-3m-8lL"/>
+                            <constraint firstItem="4qk-I5-YsI" firstAttribute="bottom" secondItem="bKe-3c-9sM" secondAttribute="bottom" constant="8" id="8hP-4n-9mM"/>
+                            <constraint firstItem="4qk-I5-YsI" firstAttribute="bottom" secondItem="M2f-Jp-7vR" secondAttribute="bottom" constant="31.5" id="9iQ-5o-0nN"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="bodyLabel" destination="M2f-Jp-7vR" id="abc-def-ghi"/>
+                        <outlet property="imageView" destination="bKe-3c-9sM" id="jkl-mno-pqr"/>
+                        <outlet property="titleLabel" destination="GJd-Yh-RWb" id="stu-vwx-yza"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="SxS-3d-7SC" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="20" y="0.0"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="AppIcon" width="60" height="60"/>
+        <systemColor name="labelColor">
+            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

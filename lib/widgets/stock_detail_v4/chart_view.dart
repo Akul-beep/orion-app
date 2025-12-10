@@ -12,38 +12,35 @@ class ChartView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // TradingView Embedded Advanced Chart - Clickable to Maximize
         GestureDetector(
           onTap: () => _showMaximizedChart(context),
-          child: Container(
+          child: SizedBox(
+            width: double.infinity,
             height: 250,
-            margin: const EdgeInsets.symmetric(horizontal: 20.0),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+            child: Container(
+              width: double.infinity,
+              height: 250,
+              margin: EdgeInsets.zero,
+              padding: EdgeInsets.zero,
+              decoration: BoxDecoration(
+                color: Colors.white,
+              ),
               child: Stack(
-                children: [
-                  // TradingView Mobile Chart
-                  TradingViewMobileChart(
-                    symbol: symbol,
-                    height: 250,
-                    theme: 'light',
-                    showToolbar: false, // Hide toolbar in compact view
-                    showVolume: true,
-                    showLegend: true,
-                    interval: 'D',
-                    onTap: () => _showMaximizedChart(context),
-                  ),
+              children: [
+                // TradingView Mobile Chart
+                TradingViewMobileChart(
+                  symbol: symbol,
+                  height: 250,
+                  theme: 'light',
+                  showToolbar: true, // Show toolbar with indicator button
+                  showVolume: true,
+                  showLegend: true,
+                  interval: 'D',
+                  onTap: () => _showMaximizedChart(context),
+                ),
                   // Tap to expand overlay
                   Positioned(
                     top: 8,
@@ -81,10 +78,10 @@ class ChartView extends StatelessWidget {
                       ),
                     ),
                   ),
-                ],
-              ),
+              ],
             ),
           ),
+        ),
         ),
         const SizedBox(height: 20),
         _buildTimeRangeSelector(),

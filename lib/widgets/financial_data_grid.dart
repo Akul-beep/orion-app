@@ -43,13 +43,13 @@ class FinancialDataGrid extends StatelessWidget {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisCount: 2,
-            childAspectRatio: 3.0, // Increased aspect ratio to prevent overflow
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
+            childAspectRatio: 2.2, // Even better aspect ratio to prevent overflow
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
             children: [
               _buildMetricCard(
                 'Market Cap',
-                _formatMarketCap(profile.marketCapitalization),
+                _formatMarketCap(profile.marketCapitalization, profile.currency),
                 Icons.account_balance,
                 const Color(0xFF2C2C54),
               ),
@@ -73,7 +73,7 @@ class FinancialDataGrid extends StatelessWidget {
               ),
               _buildMetricCard(
                 'EPS',
-                profile.eps != null ? '\$${profile.eps!.toStringAsFixed(2)}' : 'N/A',
+                profile.eps != null ? _formatCurrency(profile.eps!, profile.currency) : 'N/A',
                 Icons.analytics,
                 const Color(0xFF9C27B0),
               ),
@@ -85,7 +85,9 @@ class FinancialDataGrid extends StatelessWidget {
               ),
               _buildMetricCard(
                 'Revenue',
-                profile.revenue != null ? _formatRevenue(profile.revenue!) : 'N/A',
+                profile.revenue != null && profile.revenue! > 0 
+                    ? _formatRevenue(profile.revenue!, profile.currency) 
+                    : 'N/A',
                 Icons.attach_money,
                 const Color(0xFF4CAF50),
               ),
@@ -157,34 +159,57 @@ class FinancialDataGrid extends StatelessWidget {
     );
   }
 
-  String _formatMarketCap(double marketCap) {
-    // The API returns market cap in millions, so we need to multiply by 1e6 first
-    final actualMarketCap = marketCap * 1e6;
+  String _getCurrencySymbol(String currency) {
+    return currency == 'INR' ? '₹' : '\$';
+  }
+
+  String _formatCurrency(double value, String currency) {
+    final symbol = _getCurrencySymbol(currency);
+    return '$symbol${value.toStringAsFixed(2)}';
+  }
+
+  String _formatMarketCap(double marketCap, String currency) {
+    final symbol = _getCurrencySymbol(currency);
+    final isIndian = currency == 'INR';
     
-    if (actualMarketCap >= 1e12) {
-      return '\$${(actualMarketCap / 1e12).toStringAsFixed(2)}T';
-    } else if (actualMarketCap >= 1e9) {
-      return '\$${(actualMarketCap / 1e9).toStringAsFixed(2)}B';
-    } else if (actualMarketCap >= 1e6) {
-      return '\$${(actualMarketCap / 1e6).toStringAsFixed(2)}M';
-    } else if (actualMarketCap >= 1e3) {
-      return '\$${(actualMarketCap / 1e3).toStringAsFixed(2)}K';
+    // marketCap is stored in millions (from NSE/Finnhub APIs)
+    // For Indian stocks, we can optionally use lakh crores, but for consistency, use T/B/M
+    // Convert to appropriate unit for display
+    
+    if (marketCap >= 1e6) {
+      // Trillions (11,400,000 millions = 11.4T)
+      return '$symbol${(marketCap / 1e6).toStringAsFixed(2)}T';
+    } else if (marketCap >= 1e3) {
+      // Billions (1,000 millions = 1B)
+      return '$symbol${(marketCap / 1e3).toStringAsFixed(2)}B';
+    } else if (marketCap >= 1) {
+      // Millions
+      return '$symbol${marketCap.toStringAsFixed(2)}M';
+    } else if (marketCap >= 0.001) {
+      // Thousands
+      return '$symbol${(marketCap * 1e3).toStringAsFixed(2)}K';
     } else {
-      return '\$${actualMarketCap.toStringAsFixed(2)}';
+      return '$symbol${(marketCap * 1e6).toStringAsFixed(2)}';
     }
   }
 
-  String _formatRevenue(double revenue) {
-    if (revenue >= 1e12) {
-      return '\$${(revenue / 1e12).toStringAsFixed(2)}T';
-    } else if (revenue >= 1e9) {
-      return '\$${(revenue / 1e9).toStringAsFixed(2)}B';
-    } else if (revenue >= 1e6) {
-      return '\$${(revenue / 1e6).toStringAsFixed(2)}M';
-    } else if (revenue >= 1e3) {
-      return '\$${(revenue / 1e3).toStringAsFixed(2)}K';
+  String _formatRevenue(double revenue, String currency) {
+    final symbol = _getCurrencySymbol(currency);
+    final isIndian = currency == 'INR';
+    
+    // Revenue is expected to be in billions (for both US and Indian stocks)
+    // For Indian stocks, revenue might come in crores, but we convert to billions for consistency
+    if (revenue >= 1000) {
+      // Trillions
+      return '$symbol${(revenue / 1000).toStringAsFixed(2)}T';
+    } else if (revenue >= 1) {
+      // Billions
+      return '$symbol${revenue.toStringAsFixed(2)}B';
+    } else if (revenue >= 0.001) {
+      // If less than 1 billion, show in millions
+      return '$symbol${(revenue * 1000).toStringAsFixed(2)}M';
     } else {
-      return '\$${revenue.toStringAsFixed(2)}';
+      return '$symbol${(revenue * 1e6).toStringAsFixed(2)}';
     }
   }
 }

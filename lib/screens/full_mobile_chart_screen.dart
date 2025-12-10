@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../widgets/tradingview_actual_widget.dart';
+import '../widgets/custom_stock_chart.dart';
+import '../services/user_progress_service.dart';
+import '../models/company_profile.dart';
+import '../utils/market_detector.dart';
 
 class FullMobileChartScreen extends StatefulWidget {
   final String symbol;
   final String companyName;
+  final CompanyProfile? profile; // Add profile for Indian stock support
 
   const FullMobileChartScreen({
     super.key,
     required this.symbol,
     required this.companyName,
+    this.profile, // Optional profile
   });
 
   @override
@@ -17,11 +24,28 @@ class FullMobileChartScreen extends StatefulWidget {
 }
 
 class _FullMobileChartScreenState extends State<FullMobileChartScreen> {
+  Key _chartKey = UniqueKey(); // Key to force chart refresh
+  
   @override
   void initState() {
     super.initState();
     // Set system UI overlay style for fullscreen mobile experience
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    
+    // Track screen visit
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      UserProgressService().trackScreenVisit(
+        screenName: 'FullMobileChartScreen',
+        screenType: 'detail',
+        metadata: {'symbol': widget.symbol, 'company_name': widget.companyName},
+      );
+      
+      UserProgressService().trackTradingActivity(
+        activityType: 'view_chart',
+        symbol: widget.symbol,
+        activityData: {'chart_type': 'fullscreen'},
+      );
+    });
   }
 
   @override
@@ -34,103 +58,81 @@ class _FullMobileChartScreenState extends State<FullMobileChartScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Column(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Mobile Header with Back Button
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: const BoxDecoration(
-                color: Color(0xFF2C2C54),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  // Back Button
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  
-                  // Stock Info
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.symbol,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          widget.companyName,
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  
-                  // Fullscreen Indicator
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.fullscreen,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                ],
+            Text(
+              widget.symbol,
+              style: GoogleFonts.inter(
+                color: const Color(0xFF111827),
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.5,
               ),
             ),
-            
-            // Full Mobile Chart
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                color: Colors.white,
-                child: TradingViewActualWidget(
-                  symbol: widget.symbol,
-                  height: MediaQuery.of(context).size.height - 100,
-                  theme: 'light',
-                  showToolbar: true,
-                  showVolume: true,
-                  showLegend: true,
-                  interval: 'D',
-                ),
+            Text(
+              widget.companyName,
+              style: GoogleFonts.inter(
+                color: const Color(0xFF6B7280),
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
               ),
             ),
-            
           ],
         ),
+        centerTitle: false,
+        actions: [
+          // Refresh Button
+          IconButton(
+            onPressed: () {
+              setState(() {
+                // Force chart refresh by changing key
+                _chartKey = UniqueKey();
+              });
+            },
+            icon: const Icon(Icons.refresh, size: 24),
+            color: const Color(0xFF0052FF),
+            tooltip: 'Refresh Chart',
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: Container(
+        width: double.infinity,
+        color: Colors.white,
+        child: MarketDetector.isIndianStock(widget.symbol)
+            ? // Indian stocks: Use historical data chart (CustomStockChart)
+              CustomStockChart(
+                key: _chartKey, // Use key to force refresh
+                symbol: widget.symbol,
+                height: MediaQuery.of(context).size.height - 
+                        MediaQuery.of(context).padding.top - 
+                        kToolbarHeight,
+                theme: 'light',
+                interval: 'D',
+              )
+            : // US stocks: Use TradingView widget
+              TradingViewActualWidget(
+                key: _chartKey, // Use key to force refresh
+                symbol: widget.symbol,
+                profile: widget.profile, // Pass profile for US stock support
+                height: MediaQuery.of(context).size.height - 
+                        MediaQuery.of(context).padding.top - 
+                        kToolbarHeight,
+                theme: 'light',
+                showToolbar: true,
+                showVolume: true,
+                showLegend: true,
+                interval: 'D',
+              ),
       ),
     );
   }

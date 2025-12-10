@@ -1,4 +1,5 @@
 class NewsArticle {
+  final int id;
   final String headline;
   final String summary;
   final String url;
@@ -7,6 +8,7 @@ class NewsArticle {
   final DateTime datetime;
 
   NewsArticle({
+    required this.id,
     required this.headline,
     required this.summary,
     required this.url,
@@ -17,6 +19,7 @@ class NewsArticle {
 
   factory NewsArticle.fromJson(Map<String, dynamic> json) {
     return NewsArticle(
+      id: json['id'] ?? 0,
       headline: json['headline'] ?? '',
       summary: json['summary'] ?? '',
       url: json['url'] ?? '',

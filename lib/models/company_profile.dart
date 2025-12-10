@@ -1,10 +1,15 @@
 class CompanyProfile {
   final String name;
   final String ticker;
+  final String symbol;
   final String country;
+  final String currency;
   final String industry;
+  final String finnhubIndustry;
   final String weburl;
   final String logo;
+  final String phone;
+  final String ipo;
   final double marketCapitalization;
   final double shareOutstanding;
   final String description;
@@ -32,6 +37,11 @@ class CompanyProfile {
     required this.shareOutstanding,
     required this.description,
     required this.exchange,
+    this.symbol = '',
+    this.currency = 'USD',
+    this.finnhubIndustry = '',
+    this.phone = '',
+    this.ipo = '',
     this.peRatio,
     this.dividendYield,
     this.beta,
@@ -45,10 +55,40 @@ class CompanyProfile {
     this.debtToEquity,
   });
 
+  // Alternative constructor for service compatibility
+  CompanyProfile.fromService({
+    required this.symbol,
+    required this.name,
+    required this.country,
+    required this.currency,
+    required this.exchange,
+    required this.ipo,
+    required this.marketCapitalization,
+    required this.shareOutstanding,
+    required this.logo,
+    required this.phone,
+    required this.weburl,
+    required this.finnhubIndustry,
+  }) : ticker = symbol,
+       industry = finnhubIndustry,
+       description = '',
+       peRatio = null,
+       dividendYield = null,
+       beta = null,
+       eps = null,
+       bookValue = null,
+       priceToBook = null,
+       priceToSales = null,
+       revenue = null,
+       profitMargin = null,
+       returnOnEquity = null,
+       debtToEquity = null;
+
   factory CompanyProfile.fromJson(Map<String, dynamic> json) {
     return CompanyProfile(
       name: json['name'] ?? '',
       ticker: json['ticker'] ?? '',
+      symbol: json['ticker'] ?? '', // Add symbol field
       country: json['country'] ?? '',
       industry: json['finnhubIndustry'] ?? '',
       weburl: json['weburl'] ?? '',

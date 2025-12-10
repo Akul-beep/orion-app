@@ -9,8 +9,9 @@ import '../widgets/stock_detail_v4/about_section.dart';
 
 // Importing the new transaction history widget
 import '../widgets/stock_detail_v5/transaction_history.dart';
+import '../services/user_progress_service.dart';
 
-class StockDetailScreen extends StatelessWidget {
+class StockDetailScreen extends StatefulWidget {
   final String symbol;
   final String companyName;
   
@@ -19,6 +20,30 @@ class StockDetailScreen extends StatelessWidget {
     required this.symbol,
     required this.companyName,
   });
+
+  @override
+  State<StockDetailScreen> createState() => _StockDetailScreenState();
+}
+
+class _StockDetailScreenState extends State<StockDetailScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Track screen visit
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      UserProgressService().trackScreenVisit(
+        screenName: 'StockDetailScreen',
+        screenType: 'detail',
+        metadata: {'symbol': widget.symbol, 'company_name': widget.companyName},
+      );
+      
+      UserProgressService().trackTradingActivity(
+        activityType: 'view_stock_detail',
+        symbol: widget.symbol,
+        activityData: {'company_name': widget.companyName},
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +57,7 @@ class StockDetailScreen extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          companyName,
+          widget.companyName,
           style: const TextStyle(
             color: Colors.black,
             fontSize: 18,
@@ -44,9 +69,9 @@ class StockDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            StockPriceHeader(symbol: symbol),
+            StockPriceHeader(symbol: widget.symbol),
             const SizedBox(height: 20),
-            ChartView(symbol: symbol),
+            ChartView(symbol: widget.symbol),
             const WalletCard(),
             const TradeButton(),
             const AboutSection(),

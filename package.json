@@ -1,0 +1,7 @@
+{
+  "name": "orion-app",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cp -r build/web/* . || true"
+  }
+}

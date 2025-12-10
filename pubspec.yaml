@@ -40,6 +40,30 @@ dependencies:
   webview_flutter_web: ^0.2.2+4
   google_fonts: ^6.1.0
   url_launcher: ^6.2.1
+  provider: ^6.1.1
+  flutter_svg: ^2.0.9
+  # Supabase for backend (replaces Firebase)
+  supabase_flutter: ^2.5.6
+  # Local storage fallback
+  shared_preferences: ^2.3.2
+  # Additional utilities
+  uuid: ^4.5.1
+  # Firebase AI for Gemini (or use google_generative_ai as alternative)
+  google_generative_ai: ^0.4.0
+  # Social sharing
+  share_plus: ^10.0.2
+  # Local notifications
+  flutter_local_notifications: ^18.0.1
+  # HTML parsing for web scraping
+  html: ^0.15.4
+  # Charting library for custom charts
+  fl_chart: ^0.68.0
+  # Internationalization and formatting
+  intl: ^0.19.0
+  # Timezone support for scheduled notifications
+  timezone: ^0.9.2
+  # Path provider for temporary files (iOS notification attachments)
+  path_provider: ^2.1.1
 
 dev_dependencies:
 
@@ -55,9 +79,11 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - .env
+    - assets/icons/
+    - assets/logo/
+    - assets/character/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

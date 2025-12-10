@@ -21,39 +21,58 @@ class StockListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 4.0),
       child: Row(
         children: [
           CircleAvatar(
-            radius: 24,
+            radius: 20,
             backgroundColor: Colors.grey[100],
-            child: Icon(icon, size: 28, color: Colors.black),
+            child: Icon(icon, size: 24, color: Colors.black),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           Expanded(
+            flex: 4,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(ticker, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(
+                  ticker,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black),
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 4),
-                Text(company, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+                Text(
+                  company,
+                  style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w500),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
+                ),
               ],
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(price, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 4),
-              Text(
-                change,
-                style: TextStyle(
-                  color: isGainer ? const Color(0xFF00D09C) : Colors.red,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 2,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  price,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
+                const SizedBox(height: 2),
+                Text(
+                  change,
+                  style: TextStyle(
+                    color: isGainer ? const Color(0xFF00D09C) : Colors.red,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ],
       ),

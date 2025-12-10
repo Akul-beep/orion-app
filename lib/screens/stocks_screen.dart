@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../widgets/stock_list_item.dart';
 import '../services/stock_api_service.dart';
+import '../services/user_progress_service.dart';
+import '../models/stock_quote.dart';
+import '../utils/error_handler.dart';
 import 'enhanced_stock_detail_screen.dart';
 
 class StocksScreen extends StatefulWidget {
@@ -12,7 +15,7 @@ class StocksScreen extends StatefulWidget {
 }
 
 class _StocksScreenState extends State<StocksScreen> {
-  List<Map<String, dynamic>> _stocks = [];
+  List<StockQuote> _stocks = [];
   bool _isLoading = true;
   String? _error;
 
@@ -20,6 +23,15 @@ class _StocksScreenState extends State<StocksScreen> {
   void initState() {
     super.initState();
     _loadStocks();
+    
+    // Track screen visit
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      UserProgressService().trackScreenVisit(
+        screenName: 'StocksScreen',
+        screenType: 'main',
+        metadata: {'section': 'stocks'},
+      );
+    });
   }
 
   Future<void> _loadStocks() async {
@@ -37,8 +49,9 @@ class _StocksScreenState extends State<StocksScreen> {
         _isLoading = false;
       });
     } catch (e) {
+      final errorMessage = ErrorHandler.getErrorMessage(e);
       setState(() {
-        _error = e.toString();
+        _error = errorMessage;
         _isLoading = false;
       });
     }
@@ -62,6 +75,11 @@ class _StocksScreenState extends State<StocksScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
+              ? ErrorHandler.buildErrorWidget(
+                  _error!,
+                  onRetry: _loadStocks,
+                )
+              : _stocks.isEmpty
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -94,28 +112,48 @@ class _StocksScreenState extends State<StocksScreen> {
     );
   }
 
-  Widget _buildStockItem(Map<String, dynamic> stock) {
-    final quote = stock['quote'];
-    final profile = stock['profile'];
-    final symbol = stock['symbol'];
-    
+  Widget _buildStockItem(StockQuote stock) {
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
+        // Track interaction
+        await UserProgressService().trackWidgetInteraction(
+          screenName: 'StocksScreen',
+          widgetType: 'stock_card',
+          actionType: 'tap',
+          widgetId: stock.symbol,
+          interactionData: {'symbol': stock.symbol, 'name': stock.name},
+        );
+        
+        // Track navigation
+        await UserProgressService().trackNavigation(
+          fromScreen: 'StocksScreen',
+          toScreen: 'EnhancedStockDetailScreen',
+          navigationMethod: 'push',
+          navigationData: {'symbol': stock.symbol},
+        );
+        
+        // Track trading activity
+        await UserProgressService().trackTradingActivity(
+          activityType: 'view_stock',
+          symbol: stock.symbol,
+          activityData: {'from': 'stocks_screen'},
+        );
+        
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => EnhancedStockDetailScreen(
-            symbol: symbol,
-            companyName: profile.name,
+            symbol: stock.symbol,
+            companyName: stock.name.isNotEmpty ? stock.name : stock.symbol,
           )),
         );
       },
       child: StockListItem(
-        icon: _getIconForSymbol(symbol),
-        ticker: symbol,
-        company: profile.name,
-        price: '\$${quote.currentPrice.toStringAsFixed(2)}',
-        change: '${quote.change >= 0 ? '+' : ''}${quote.changePercent.toStringAsFixed(2)}%',
-        isGainer: quote.change >= 0,
+        icon: _getIconForSymbol(stock.symbol),
+        ticker: stock.symbol,
+        company: stock.name.isNotEmpty ? stock.name : stock.symbol,
+        price: '\$${stock.currentPrice.toStringAsFixed(2)}',
+        change: '${stock.change >= 0 ? '+' : ''}${stock.changePercent.toStringAsFixed(2)}%',
+        isGainer: stock.change >= 0,
       ),
     );
   }

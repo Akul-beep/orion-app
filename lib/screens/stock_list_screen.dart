@@ -1,7 +1,26 @@
 import 'package:flutter/material.dart';
+import '../services/user_progress_service.dart';
 
-class StockListScreen extends StatelessWidget {
+class StockListScreen extends StatefulWidget {
   const StockListScreen({super.key});
+
+  @override
+  State<StockListScreen> createState() => _StockListScreenState();
+}
+
+class _StockListScreenState extends State<StockListScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Track screen visit
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      UserProgressService().trackScreenVisit(
+        screenName: 'StockListScreen',
+        screenType: 'main',
+        metadata: {'section': 'stock_list'},
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
