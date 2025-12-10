@@ -272,14 +272,10 @@ class AuthService {
       String redirectUrl;
       
       // Detect platform and set appropriate redirect URL
-      // IMPORTANT: Check for mobile platforms FIRST before checking web
-      // because on iOS simulator, Uri.base might return something that looks like web
-      if (Platform.isIOS || Platform.isAndroid) {
-        // Mobile platform (iOS or Android) - ALWAYS use custom URL scheme
-        redirectUrl = 'com.orion.app://callback';
-        print('📱 Detected mobile platform: ${Platform.operatingSystem}');
-      } else if (kIsWeb) {
-        // Web platform only
+      // IMPORTANT: Check for web FIRST because Platform.isIOS/Platform.isAndroid
+      // throws an error on web (Platform is not available on web)
+      if (kIsWeb) {
+        // Web platform - use the current origin
         final origin = Uri.base.origin;
         if (origin.contains('localhost') || origin.contains('127.0.0.1')) {
           redirectUrl = 'https://lpchovurnlmucwzaltvz.supabase.co/auth/v1/callback';
@@ -287,13 +283,22 @@ class AuthService {
           redirectUrl = origin;
         }
         print('🌐 Detected web platform');
+        print('🌐 Using redirect URL: $redirectUrl');
+      } else if (Platform.isIOS || Platform.isAndroid) {
+        // Mobile platform (iOS or Android) - ALWAYS use custom URL scheme
+        redirectUrl = 'com.orion.app://callback';
+        print('📱 Detected mobile platform: ${Platform.operatingSystem}');
       } else {
         // Fallback - assume mobile
         redirectUrl = 'com.orion.app://callback';
         print('⚠️ Platform detection unclear, defaulting to mobile URL scheme');
       }
       
-      print('🔵 Platform: ${kIsWeb ? "Web" : Platform.operatingSystem}');
+      if (kIsWeb) {
+        print('🔵 Platform: Web');
+      } else {
+        print('🔵 Platform: ${Platform.isIOS ? "iOS" : Platform.isAndroid ? "Android" : "Unknown"}');
+      }
       print('🔵 Using redirect URL: $redirectUrl');
       
       // For iOS, try platformDefault first (uses in-app browser if available)
